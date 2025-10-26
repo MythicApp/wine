@@ -1142,15 +1142,13 @@ static BOOL sonoma_or_later(void)
 
 static void init_non_native_support(void)
 {
-    char *libd3dshared_path = getenv( "CX_APPLEGPTK_LIBD3DSHARED_PATH" );
-
     register_non_native_code_region = NULL;
     supports_non_native_code_regions = NULL;
 
-    if (!libd3dshared_path || !sonoma_or_later())
+    if (!sonoma_or_later())
         return;
 
-    non_native_support_lib = dlopen( libd3dshared_path, RTLD_LOCAL );
+    non_native_support_lib = dlopen( "@rpath/libd3dshared.dylib", RTLD_LOCAL );
     if (non_native_support_lib)
     {
         Dl_info dli;
