@@ -103,7 +103,7 @@ jobs:
         working-directory: build
         run: make install DESTDIR=${{ github.workspace }}/install
 
-      - name: add wine64 symlink for backwardscompatibility
+      - name: add wine64 symlink for backward compatibility
         working-directory: install
         run: ln -s bin/wine bin/wine64
 
