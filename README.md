@@ -1,3 +1,22 @@
+<h1 align="center">
+  <br>
+  <a href="https://getmythic.app">
+    <img src="https://github.com/user-attachments/assets/94185745-dbf2-4449-b281-438decf2c5c7" 
+      style="width: 20%; height: 20%;">
+  </a>
+
+  Mythic Engine
+
+  ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/MythicApp/Engine/.github%2Fworkflows%2Fbuild.yml)
+  [![Discord](https://img.shields.io/discord/1154998702650425397?color=5865F2)](https://discord.com/invite/58NZ7fFqPy)
+</h1>
+
+Mythic Engine is [Mythic](https://github.com/MythicApp/Mythic)'s implementation of Apple's [Game Porting Toolkit (GPTK)](https://developer.apple.com/games/game-porting-toolkit/), based on [CodeWeavers CrossOver 24](https://www.codeweavers.com/crossover/), which uses [wine](https://www.winehq.org/) API translation technology to allow Windows® executables to run on macOS devices.
+
+Mythic Engine utilises a variety of API translators, such as D3DMetal, DXVK, and DXMT, to create an effective yet user-friendly Windows® gaming experience on macOS.
+
+---
+
 ## INTRODUCTION
 
 Wine is a program which allows running Microsoft Windows programs
