@@ -9,6 +9,8 @@ env:
   PATH: /usr/local/bin:/usr/local/opt/bison/bin:/usr/bin:/bin:/usr/sbin:/sbin
   i386_CC: i686-w64-mingw32-gcc
   x86_64_CC: x86_64-w64-mingw32-gcc
+  i386_LD: i686-w64-mingw32-ld
+  x86_64_LD: x86_64-w64-mingw32-ld
   CFLAGS: -O3 -Wno-deprecated-declarations -Wno-unguarded-availability
   CXXFLAGS: -O3 -Wno-deprecated-declarations -Wno-unguarded-availability
   CROSSCFLAGS: -O3 -Wno-error=incompatible-pointer-types -Wno-error=int-conversion -Wno-deprecated-declarations
