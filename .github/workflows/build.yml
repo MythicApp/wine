@@ -1,0 +1,128 @@
+name: Build Mythic Engine (wine-crossover 9.0)
+
+on:
+  push:
+  pull_request:
+
+env:
+  MACOSX_DEPLOYMENT_TARGET: 10.15
+  PATH: /usr/local/bin:/usr/local/opt/bison/bin:/usr/bin:/bin:/usr/sbin:/sbin
+  i386_CC: i686-w64-mingw32-gcc
+  x86_64_CC: x86_64-w64-mingw32-gcc
+  CFLAGS: -O3 -Wno-deprecated-declarations -Wno-unguarded-availability
+  CXXFLAGS: -O3 -Wno-deprecated-declarations -Wno-unguarded-availability
+  CROSSCFLAGS: -O3 -Wno-error=incompatible-pointer-types -Wno-error=int-conversion -Wno-deprecated-declarations
+  LDFLAGS: -Wl,-ld_classic -Wl,-headerpad_max_install_names -Wl,-rpath,@loader_path/../../ -Wl,-rpath,@loader_path/../../external -Wl,-rpath,/usr/local/lib
+  ac_cv_lib_soname_MoltenVK: libMoltenVK.dylib
+  ac_cv_lib_soname_vulkan: ""
+
+jobs:
+  build:
+    runs-on: macos-15-intel
+    
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v5
+        with:
+          path: src
+
+      - name: install homebrew formulae
+        run: |
+          brew install bison \
+            pkg-config \
+            autoconf \
+            automake \
+            libtool \
+            cmake \
+            gettext \
+            mingw-w64 \
+            freetype \
+            gnutls \
+            gstreamer \
+            gst-plugins-base \
+            gst-plugins-good \
+            libpng \
+            jpeg \
+            libtiff \
+            libffi \
+            libusb \
+            sdl2 \
+            molten-vk \
+            winetricks
+
+      - name: create build directory
+        run: mkdir -p build
+
+      - name: configure wine
+        working-directory: build
+        run: |
+          ../src/configure \
+            --prefix= \
+            --disable-tests \
+            --disable-winedbg \
+            --enable-archs=i386,x86_64 \
+            --with-mingw \
+            --without-alsa \
+            --without-capi \
+            --with-coreaudio \
+            --with-cups \
+            --without-dbus \
+            --without-fontconfig \
+            --with-freetype \
+            --with-gettext \
+            --without-gettextpo \
+            --without-gphoto \
+            --with-gnutls \
+            --without-gssapi \
+            --with-gstreamer \
+            --without-krb5 \
+            --without-netapi \
+            --with-opencl \
+            --with-opengl \
+            --without-oss \
+            --with-pcap \
+            --with-pthread \
+            --without-pulse \
+            --without-sane \
+            --with-sdl \
+            --without-udev \
+            --with-unwind \
+            --without-usb \
+            --without-v4l2 \
+            --with-vulkan \
+            --without-x
+
+      - name: build wine
+        working-directory: build
+        run: make -j$(sysctl -n hw.ncpu)
+
+      - name: create install directory
+        run: mkdir -p install
+
+      - name: install wine
+        working-directory: build
+        run: make install DESTDIR=${{ github.workspace }}/install
+
+      - name: add wine64 symlink for backwardscompatibility
+        working-directory: install
+        run: ln -s bin/wine bin/wine64
+
+      - name: create Engine directory
+        run: mkdir -p Engine
+
+      - name: copy build artifacts
+        run: |
+          # copy wine installation
+          mkdir -p Engine/wine
+          cp -R install/* Engine/wine
+
+          # todo: copy dxvk, dxmt, d3dmetal
+
+      - name: compress engine artifact
+        run: tar -cJf Engine.tar.xz -C Engine .
+
+      - name: upload engine artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: Engine
+          path: Engine.tar.xz
