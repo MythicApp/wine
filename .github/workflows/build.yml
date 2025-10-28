@@ -45,7 +45,6 @@ jobs:
             jpeg \
             libtiff \
             libffi \
-            libusb \
             sdl2 \
             molten-vk \
             winetricks
