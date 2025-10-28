@@ -124,6 +124,9 @@ jobs:
           # copy gptk libraries
           ditto src/external/gptk-*/redist/lib/ Engine/wine/lib/
 
+      - name: copy engine properties file
+        run: cp -R src/Mythic/Properties.plist Engine/
+
       - name: compress engine artifact
         run: tar -cJf Engine.tar.xz -C Engine .
 
