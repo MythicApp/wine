@@ -13,7 +13,7 @@ env:
   x86_64_LD: x86_64-w64-mingw32-ld
   CFLAGS: -O2 -Wno-deprecated-declarations -Wno-unguarded-availability
   CXXFLAGS: -O2 -Wno-deprecated-declarations -Wno-unguarded-availability
-  CROSSCFLAGS: -O2 -Wno-error=incompatible-pointer-types -Wno-error=int-conversion -Wno-deprecated-declarations
+  CROSSCFLAGS: -O2 -Wno-error=incompatible-pointer-types -Wno-error=int-conversion -Wno-deprecated-declarations -std=gnu17
   LDFLAGS: -Wl,-ld_classic -Wl,-headerpad_max_install_names -Wl,-rpath,@loader_path/../../ -Wl,-rpath,@loader_path/../../external -Wl,-rpath,/usr/local/lib
   ac_cv_lib_soname_MoltenVK: libMoltenVK.dylib
   ac_cv_lib_soname_vulkan: ""
