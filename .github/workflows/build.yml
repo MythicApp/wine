@@ -34,7 +34,7 @@ jobs:
         with:
           path: src
 
-      - name: install homebrew formulae
+      - name: install build & runtime dependencies
         run: |
           brew install bison \
             pkg-config \
