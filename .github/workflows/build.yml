@@ -41,7 +41,6 @@ jobs:
             freetype \
             gnutls \
             gstreamer \
-            libinotify \
             gst-plugins-base \
             gst-plugins-good \
             libpng \
@@ -76,7 +75,6 @@ jobs:
             --with-gnutls \
             --without-gssapi \
             --with-gstreamer \
-            --with-inotify \
             --without-krb5 \
             --without-netapi \
             --with-opencl \
