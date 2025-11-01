@@ -120,7 +120,7 @@ jobs:
         run: |
           # copy dxvk binaries
           mkdir -p Engine/dxvk
-          cp -R src/external/dxvk-*/* Engine/dxvk/
+          ditto src/external/dxvk-* Engine/dxvk/
 
           # copy gptk libraries
           ditto src/external/gptk-*/redist/lib/ Engine/wine/lib/
