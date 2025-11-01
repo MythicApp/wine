@@ -18,6 +18,10 @@ env:
   ac_cv_lib_soname_MoltenVK: libMoltenVK.dylib
   ac_cv_lib_soname_vulkan: ""
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: macos-15-intel
