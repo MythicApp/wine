@@ -11,6 +11,8 @@ env:
   x86_64_CC: x86_64-w64-mingw32-gcc
   i386_LD: i686-w64-mingw32-ld
   x86_64_LD: x86_64-w64-mingw32-ld
+  CPATH: /usr/local/include
+  LIBRARY_PATH: /usr/local/lib
   CFLAGS: -O2 -Wno-deprecated-declarations -Wno-unguarded-availability
   CXXFLAGS: -O2 -Wno-deprecated-declarations -Wno-unguarded-availability
   CROSSCFLAGS: -O2 -Wno-error=incompatible-pointer-types -Wno-error=int-conversion -Wno-deprecated-declarations -std=gnu17
