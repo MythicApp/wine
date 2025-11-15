@@ -55,13 +55,10 @@ jobs:
             # install mingw-w64 v12.0.0_1 from local formula w/ tap
             # required, this version requires binutils 2.43.1 or older
             brew tap-new local/mingw-w64
-            cp src/external/dependencies/mingw-w64@12.rb \
+            cp src/external/dependencies/mingw-w64.rb \
               "$(brew --repo local/mingw-w64)/Formula/mingw-w64.rb"
             
             brew install local/mingw-w64/mingw-w64
-            
-            brew untap local/mingw-w64
-            rm -rf "$(brew --repo local/mingw-w64)"
 
       - name: create build directory
         run: mkdir -p build
