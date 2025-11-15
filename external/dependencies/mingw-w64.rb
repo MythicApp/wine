@@ -1,4 +1,4 @@
-# Extracted from https://github.com/Homebrew/homebrew-core/blob/376f761f2ef7ac09fb7fbe109961e74131f1666c/Formula/m/mingw-w64.rb
+# Extracted from https://github.com/Homebrew/homebrew-core/blob/ee5de6bb2ada22b2a4aeda343d7362980a5be000/Formula/m/mingw-w64.rb
 
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ``AS IS'' AND ANY EXPRESSED
 # OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -25,13 +25,14 @@ class MingwW64 < Formula
   end
 
   bottle do
-    sha256 arm64_sonoma:   "b040fa5e367b31fa24367d9ab3aba6fb04ad914d7fd1406debf92f550bab109e"
-    sha256 arm64_ventura:  "fa3f3ad8e8a1e89bb25129aa5f3324374193e68d38110e609616d5bde02ddce2"
-    sha256 arm64_monterey: "9309ce0610536f506b34a66e1c36001b259eaea72f47e93c157df9ae3ba4de30"
-    sha256 sonoma:         "1c4de417291d7e046a6872969c20955964946aa6b4ba99f1a1ddc5d1a243604f"
-    sha256 ventura:        "37994d9e6c8af8dc8c0c53f13d9662e1a6acfbd4ed281928628b25dab529e88b"
-    sha256 monterey:       "8eb96682e5a0385c14c301355e9bda4836d3ac4331918ae577f869c641d832dd"
-    sha256 x86_64_linux:   "94b7a7778c4b649c8270c80e8a5d0659a4b3d2efb0b38bdedc30fae869569f0f"
+    sha256 arm64_sequoia:  "9c50b0cbeac45e0ca35f410e18c14018c665aa4bbdea9adf749ee96e677af13e"
+    sha256 arm64_sonoma:   "00b5146a2b3bbd942ecf749baa930e2f7b1d5a425cadb69a8f233883eb926e63"
+    sha256 arm64_ventura:  "c52e1f08ce3a00d33b125d85bb8a0a12f03f619c35f65ec8eed8adea99e8498f"
+    sha256 arm64_monterey: "883e7f44acb2e714e7a698f576c32a096bf34edc0627f101cd5e48c26f63eb1c"
+    sha256 sonoma:         "dbfb198d40cff9bb93ac41f0a4422fe823fde2fd2610052956dbc4037e51c482"
+    sha256 ventura:        "eed47c1f6336d28f4cebc5644202bfbc8e7723ef16cc8eef1ab50c3577f6a02b"
+    sha256 monterey:       "5c24fa44d33423e55ac48c43575764e522d46675cdea49ad8d1b6d609b7a7509"
+    sha256 x86_64_linux:   "1b00797a89f30786da9886ac657527b5c8e2dc98432679e9fafc7f7d230e9e87"
   end
 
   # binutils searches for zstd using pkg-config
