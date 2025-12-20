@@ -19,6 +19,8 @@ env:
   LDFLAGS: -Wl,-ld_classic -Wl,-headerpad_max_install_names -Wl,-rpath,@loader_path/../../ -Wl,-rpath,@loader_path/../../external -Wl,-rpath,/usr/local/lib
   ac_cv_lib_soname_MoltenVK: libMoltenVK.dylib
   ac_cv_lib_soname_vulkan: ""
+  TOOLCHAINS: com.applex.dt.toolchain.Xcode13
+  SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref_name }}
@@ -29,10 +31,21 @@ jobs:
     runs-on: macos-15-intel
     
     steps:
-      - name: checkout repository
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
         with:
           path: src
+
+      - name: add Xcode 13 toolchain
+        run: |
+          sudo mkdir -p /Library/Developer/Toolchains
+          curl -fL https://dl.getmythic.app/engine/toolchains/Xcode13.xctoolchain.tar.xz \
+            | sudo tar -xJ -C /Library/Developer/Toolchains
+
+      - name: add macOS 12.3 SDK
+        run: |
+          sudo mkdir -p /Library/Developer/CommandLineTools/SDKs
+          curl -fL https://github.com/Gcenx/macos-sdk/releases/download/12.3/MacOSX12.3.tar.bz2 \
+            | sudo tar -xj -C /Library/Developer/CommandLineTools/SDKs
 
       - name: install build & runtime dependencies
         run: |
