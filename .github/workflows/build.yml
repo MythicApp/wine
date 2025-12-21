@@ -16,7 +16,9 @@ env:
   CFLAGS: -O2 -Wno-deprecated-declarations -Wno-unguarded-availability
   CXXFLAGS: -O2 -Wno-deprecated-declarations -Wno-unguarded-availability
   CROSSCFLAGS: -O2 -Wno-error=incompatible-pointer-types -Wno-error=int-conversion -Wno-deprecated-declarations
-  LDFLAGS: -Wl,-ld_classic -Wl,-headerpad_max_install_names -Wl,-rpath,@loader_path/../../ -Wl,-rpath,@loader_path/../../external -Wl,-rpath,/usr/local/lib
+  LDFLAGS: -Wl,-ld_classic -Wl,-headerpad_max_install_names -Wl,-rpath,@loader_path/../../ -Wl,-rpath,@loader_path/../../external -Wl,-rpath,/usr/local/lib -L/usr/local/opt/libpcap/lib
+  CPPFLAGS: -I/usr/local/opt/libpcap/include
+  PKG_CONFIG_PATH: /usr/local/opt/libpcap/lib/pkgconfig
   ac_cv_lib_soname_MoltenVK: libMoltenVK.dylib
   ac_cv_lib_soname_vulkan: ""
   TOOLCHAINS: com.applex.dt.toolchain.Xcode13
@@ -50,17 +52,18 @@ jobs:
       - name: install build & runtime dependencies
         run: |
           brew install bison \
+            freetype \
             pkg-config \
             gettext \
-            freetype \
             gnutls \
             gstreamer \
             gst-plugins-base \
             gst-plugins-good \
-            libpng \
             jpeg \
+            libpng \
             libtiff \
             libffi \
+            libpcap \
             sdl2 \
             molten-vk \
             winetricks
