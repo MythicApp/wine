@@ -87,7 +87,7 @@ jobs:
             brew install local/mingw-w64/mingw-w64
 
       - name: create build directory
-        run: mkdir -p build
+        run: mkdir build
 
       - name: configure wine
         working-directory: build
@@ -132,7 +132,7 @@ jobs:
         run: make -j$(sysctl -n hw.ncpu)
 
       - name: create install directory
-        run: mkdir -p install
+        run: mkdir install
 
       - name: install wine
         working-directory: build
@@ -162,7 +162,7 @@ jobs:
             | tar -xJ -C mono
 
       - name: create Engine directory
-        run: mkdir -p Engine
+        run: mkdir Engine
 
       - name: copy build artifacts
         run: |
