@@ -148,7 +148,7 @@ jobs:
           exec "$DIR/wine" "$@"
           EOF
 
-          chmod +x "$DIR/wine64"
+          chmod +x wine64
 
       - name: install wine mono
         working-directory: install/share/wine
