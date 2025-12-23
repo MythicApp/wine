@@ -138,9 +138,17 @@ jobs:
         working-directory: build
         run: make install-lib DESTDIR=${{ github.workspace }}/install
 
-      - name: add wine64 symlink for backward compatibility
+      - name: add wine64 as an executable wrapper for backward compatibility
         working-directory: install/bin
-        run: ln -s wine wine64
+        run: |
+          cat > wine64 << 'EOF'
+          #!/usr/bin/env bash
+          set -e
+          DIR="$(cd "$(dirname "$0")" && pwd)"
+          exec "$DIR/wine" "$@"
+          EOF
+
+          chmod +x "$DIR/wine64"
 
       - name: create Engine directory
         run: mkdir -p Engine
