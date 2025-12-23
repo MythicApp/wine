@@ -57,7 +57,8 @@ jobs:
           sudo mkdir -p /Library/Developer/CommandLineTools/SDKs
           curl -fL https://github.com/Gcenx/macos-sdk/releases/download/12.3/MacOSX12.3.tar.bz2 \
             | sudo tar -xj -C /Library/Developer/CommandLineTools/SDKs
-
+      
+      # ensure that when updating dependencies, the dylib bundler script is also updated
       - name: install build & runtime dependencies
         run: |
           brew install bison \
@@ -158,6 +159,11 @@ jobs:
 
           # copy gptk libraries
           ditto src/external/gptk-*/redist/lib/ Engine/wine/lib/
+      
+      - name: bundle dylib dependencies
+        run: |
+          chmod +x src/.github/dylib_bundler.zsh
+          ENGINE_DIR=Engine/wine src/.github/dylib_bundler.zsh
 
       - name: copy engine properties file
         run: cp -R src/Mythic/Properties.plist Engine/
