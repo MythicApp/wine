@@ -1,211 +1,147 @@
 #!/bin/zsh
 
-# Bundle dylib dependencies for Wine distribution
-# This script finds all dylib dependencies, copies them, and fixes install names
+# Bundle dylib dependencies for Wine's distribution
+# This script finds all dylib dependencies, copies them, and fixes install names.
 
 set -e
 
 # Output directory (can be overridden via environment variable)
 ENGINE_DIR="${ENGINE_DIR:-Engine/wine}"
+BREW_PREFIX=$(brew --prefix)
 
-# GStreamer plugins to bundle
-GSTREAMER_LIBS=(
-    "libgstapplemedia"
-    "libgstasf"
-    "libgstaudioconvert"
-    "libgstaudioparsers"
-    "libgstaudioresample"
-    "libgstavi"
-    "libgstcoreelements"
-    "libgstdebug"
-    "libgstdeinterlace"
-    "libgstid3demux"
-    "libgstisomp4"
-    "libgstlibav"
-    "libgstopengl"
-    "libgstplayback"
-    "libgsttypefindfunctions"
-    "libgstvideoconvertscale"
-    "libgstvideofilter"
-    "libgstvideoparsersbad"
-    "libgstwavparse"
+# List of GStreamer plugins to bundle, minus the 'libgst' prefix
+GSTREAMER_PLUGINS=(
+    applemedia asf audioconvert audioparsers audioresample avi
+    coreelements debug deinterlace id3demux isomp4 libav opengl
+    playback typefindfunctions videoconvertscale videofilter
+    videoparsersbad wavparse
 )
 
-# Non-GStreamer libraries to bundle
-LIBS=(
-    "libMoltenVK"
-    "libSDL2-2.0.0"
-    "libpcap"
-    "libfreetype"
-    "libgnutls"
-    "libpng16"
-    "libjpeg"
-    "libtiff"
+# list of keg-only formulae and their main dylib names
+BUNDLE_LIBS=(
+    molten-vk:libMoltenVK
+    sdl2:libSDL2-2.0.0
+    freetype:libfreetype
+    gnutls:libgnutls
+    libpng:libpng16
+    libtiff:libtiff
+    libpcap:libpcap
+    jpeg:libjpeg
+    libffi:libffi
 )
 
-# Global array to store all discovered dylibs (unique entries)
-typeset -aU all_dylibs
-# Queue for iterative processing
-typeset -a queue
+typeset -A seen_dylibs
+typeset -a all_dylibs
 
-# Resolve @rpath dependencies by searching in Homebrew's lib directory
+get_lib_path() {
+    local formula="$1" libname="$2"
+    local prefix=$(brew --prefix "$formula" 2>/dev/null) || return 1
+    find "$prefix/lib" -maxdepth 1 -name "${libname}*.dylib" -type f 2>/dev/null | head -1
+}
+
 resolve_rpath() {
-  local ref_dylib="$1"
-  local dylib_name="${ref_dylib#@rpath/}"
-  local brew_lib_dir="$(brew --prefix)/lib"
-  local resolved_path="${brew_lib_dir}/${dylib_name}"
-  
-  if [[ -f "$resolved_path" ]]; then
-    echo "$resolved_path"
-  else
-    echo ""
-  fi
-}
-
-# Find all dylib dependencies iteratively
-find_dylib_dependencies() {
-  local dylib="$1"
-  queue+=("$dylib")
-
-  while [[ ${#queue[@]} -gt 0 ]]; do
-    local current_dylib="${queue[1]}"
-    queue=("${queue[@]:1}")
-
-    local referenced_dylibs=($(otool -L "$current_dylib" 2>/dev/null | awk '/^\t/ {print $1}' | grep '\.dylib'))
-
-    for ref_dylib in $referenced_dylibs; do
-      # Skip system libraries
-      if [[ "$ref_dylib" == /usr/lib/* ]] || [[ "$ref_dylib" == /System/* ]]; then
-        continue
-      fi
-
-      # Resolve @rpath references
-      if [[ "$ref_dylib" == @rpath/* ]]; then
-        ref_dylib=$(resolve_rpath "$ref_dylib")
-        if [[ -z "$ref_dylib" ]]; then
-          continue
-        fi
-      fi
-
-      # Skip relative path references
-      if [[ "$ref_dylib" == @loader_path/* ]] || [[ "$ref_dylib" == @executable_path/* ]]; then
-        continue
-      fi
-
-      # Add to array and queue if not already present
-      if [[ ! " ${all_dylibs[*]} " =~ " $ref_dylib " ]]; then
-        all_dylibs+=("$ref_dylib")
-        queue+=("$ref_dylib")
-      fi
+    local name="${1#@rpath/}"
+    
+    # Check main lib dir first
+    [[ -f "${BREW_PREFIX}/lib/${name}" ]] && { echo "${BREW_PREFIX}/lib/${name}"; return; }
+    
+    # Search keg-only formula lib dirs
+    for entry in "${BUNDLE_LIBS[@]}"; do
+        local formula="${entry%%:*}"
+        local path="$(brew --prefix "$formula" 2>/dev/null)/lib/${name}"
+        [[ -f "$path" ]] && { echo "$path"; return; }
     done
-  done
 }
 
-# Fix dylib install names
-update_dylib_paths() {
-  local dylib_file="$1"
-  local path_prefix="$2"
-  echo "Fixing install names for $dylib_file..."
-
-  # Update the dylib's own install name
-  local basename_dylib=$(basename "$dylib_file")
-  install_name_tool -id "${path_prefix}${basename_dylib}" "$dylib_file" 2>/dev/null || true
-
-  otool -L "$dylib_file" | grep -v "$dylib_file" | awk '{print $1}' | while read -r dylib_path; do
-    if [[ "$dylib_path" != /usr/lib* ]] && [[ "$dylib_path" != /System/* ]]; then
-      local lib_name="${dylib_path##*/}"
-      local new_dylib_path="${path_prefix}${lib_name}"
-      echo "  $dylib_path -> $new_dylib_path"
-      install_name_tool -change "$dylib_path" "$new_dylib_path" "$dylib_file" 2>/dev/null || true
-    fi
-  done
-  
-  # Re-sign with ad-hoc signature
-  codesign -fs- "$dylib_file" 2>/dev/null || true
+normalize_path() {
+    python3 -c "import os; print(os.path.realpath('$1'))" 2>/dev/null || echo "$1"
 }
 
-# Copy libraries to appropriate directories
-copy_library() {
-  local lib="$1"
-  local gstreamer_dir="${ENGINE_DIR}/lib/gstreamer-1.0"
-  local lib_dir="${ENGINE_DIR}/lib"
+find_dependencies() {
+    local dylib="$1"
+    local norm=$(normalize_path "$dylib")
+    
+    [[ -n "${seen_dylibs[$norm]}" ]] && return
+    seen_dylibs[$norm]=1
+    all_dylibs+=("$dylib")
+    
+    local -a queue=("$dylib")
 
-  mkdir -p "$gstreamer_dir" "$lib_dir"
+    while [[ ${#queue[@]} -gt 0 ]]; do
+        local current="${queue[1]}"
+        queue=("${queue[@]:1}")
 
-  if [[ "$lib" == *"/gstreamer-1.0/"* ]]; then
-    echo "Copying GStreamer plugin: $lib"
-    cp -L "$lib" "$gstreamer_dir/"
-    update_dylib_paths "$gstreamer_dir/$(basename "$lib")" "@loader_path/../"
-  else
-    echo "Copying library: $lib"
-    cp -L "$lib" "$lib_dir/"
-    update_dylib_paths "$lib_dir/$(basename "$lib")" "@loader_path/"
-  fi
+        for ref in $(otool -L "$current" 2>/dev/null | tail -n +2 | awk '/^\t/ {print $1}' | grep '\.dylib'); do
+            [[ "$ref" == /usr/lib/* || "$ref" == /System/* ]] && continue
+            [[ "$ref" == @loader_path/* || "$ref" == @executable_path/* ]] && continue
+            
+            [[ "$ref" == @rpath/* ]] && { ref=$(resolve_rpath "$ref"); [[ -z "$ref" ]] && continue; }
+
+            norm=$(normalize_path "$ref")
+            [[ -z "${seen_dylibs[$norm]}" ]] && {
+                seen_dylibs[$norm]=1
+                all_dylibs+=("$ref")
+                queue+=("$ref")
+            }
+        done
+    done
+}
+
+fix_install_names() {
+    local file="$1" prefix="$2"
+    chmod u+w "$file"
+    install_name_tool -id "${prefix}$(basename "$file")" "$file" 2>/dev/null || true
+    
+    otool -L "$file" | grep -v "$file" | awk '{print $1}' | while read -r path; do
+        [[ "$path" != /usr/lib* && "$path" != /System/* ]] && \
+            install_name_tool -change "$path" "${prefix}${path##*/}" "$file" 2>/dev/null || true
+    done
+    codesign -fs- "$file" 2>/dev/null || true
+}
+
+copy_dylib() {
+    local lib="$1" dest_dir="${ENGINE_DIR}/lib" prefix="@loader_path/"
+    
+    [[ "$lib" == *"/gstreamer-1.0/"* ]] && { dest_dir="${ENGINE_DIR}/lib/gstreamer-1.0"; prefix="@loader_path/../"; }
+    
+    local dest="${dest_dir}/$(basename "$lib")"
+    mkdir -p "$dest_dir"
+    [[ -f "$dest" ]] && return 0
+    
+    cp -L "$lib" "$dest"
+    fix_install_names "$dest" "$prefix"
 }
 
 main() {
-  # Get Homebrew prefixes
-  GSTREAMER_PREFIX=$(brew --prefix gstreamer)
-  PREFIX=$(brew --prefix)
+    local gst_prefix=$(brew --prefix gstreamer)
 
-  echo "=== Finding GStreamer plugin dependencies ==="
-  for lib in "${GSTREAMER_LIBS[@]}"; do
-    dylib_path="${GSTREAMER_PREFIX}/lib/gstreamer-1.0/${lib}.dylib"
-    if [[ -f "$dylib_path" ]]; then
-      echo "Processing: $dylib_path"
-      find_dylib_dependencies "$dylib_path"
-    else
-      echo "Warning: $dylib_path not found"
-    fi
-  done
+    echo "=== Processing GStreamer plugins ==="
+    for plugin in "${GSTREAMER_PLUGINS[@]}"; do
+        local path="${gst_prefix}/lib/gstreamer-1.0/libgst${plugin}.dylib"
+        [[ -f "$path" ]] && find_dependencies "$path" || echo "Warning: $plugin not found"
+    done
 
-  echo "=== Finding library dependencies ==="
-  for lib in "${LIBS[@]}"; do
-    # Try with .dylib extension first, then without
-    dylib_path="${PREFIX}/lib/${lib}.dylib"
-    if [[ ! -f "$dylib_path" ]]; then
-      # Try finding the actual versioned dylib
-      dylib_path=$(find "${PREFIX}/lib" -maxdepth 1 -name "${lib}*.dylib" -type f 2>/dev/null | head -1)
-    fi
-    
-    if [[ -f "$dylib_path" ]]; then
-      echo "Processing: $dylib_path"
-      find_dylib_dependencies "$dylib_path"
-    else
-      echo "Warning: $lib not found in ${PREFIX}/lib"
-    fi
-  done
+    echo "=== Processing libraries ==="
+    for entry in "${BUNDLE_LIBS[@]}"; do
+        local formula="${entry%%:*}" libname="${entry#*:}"
+        local path=$(get_lib_path "$formula" "$libname")
+        [[ -n "$path" ]] && find_dependencies "$path" || echo "Warning: $formula not found"
+    done
 
-  echo "=== Copying ${#all_dylibs[@]} dylibs ==="
-  for dylib in "${all_dylibs[@]}"; do
-    copy_library "$dylib"
-  done
+    echo "=== Copying ${#all_dylibs[@]} dylibs ==="
+    for dylib in "${all_dylibs[@]}"; do copy_dylib "$dylib"; done
 
-  # Copy GStreamer include files if they exist
-  if [[ -d "${GSTREAMER_PREFIX}/lib/gstreamer-1.0/include" ]]; then
-    echo "=== Copying GStreamer include files ==="
-    mkdir -p "${ENGINE_DIR}/lib/gstreamer-1.0"
-    cp -a "${GSTREAMER_PREFIX}/lib/gstreamer-1.0/include" "${ENGINE_DIR}/lib/gstreamer-1.0/"
-  fi
+    [[ -d "${gst_prefix}/lib/gstreamer-1.0/include" ]] && {
+        mkdir -p "${ENGINE_DIR}/lib/gstreamer-1.0"
+        cp -a "${gst_prefix}/lib/gstreamer-1.0/include" "${ENGINE_DIR}/lib/gstreamer-1.0/"
+    }
 
-  echo "=== Fixing Wine .so files ==="
-  # Fix winegstreamer.so to find bundled libraries
-  if [[ -f "${ENGINE_DIR}/lib/wine/x86_64-unix/winegstreamer.so" ]]; then
-    update_dylib_paths "${ENGINE_DIR}/lib/wine/x86_64-unix/winegstreamer.so" "@rpath/"
-  fi
+    echo "=== Fixing Wine .so files ==="
+    for so in "${ENGINE_DIR}"/lib/wine/x86_64-unix/*.so(N); do
+        otool -L "$so" 2>/dev/null | grep -q "/usr/local\|/opt/homebrew" && fix_install_names "$so" "@rpath/"
+    done
 
-  # Fix other Wine .so files that might reference Homebrew libraries
-  for so_file in "${ENGINE_DIR}"/lib/wine/x86_64-unix/*.so; do
-    if [[ -f "$so_file" ]]; then
-      # Check if it has any non-system dependencies
-      if otool -L "$so_file" 2>/dev/null | grep -q "/usr/local\|/opt/homebrew"; then
-        echo "Fixing: $so_file"
-        update_dylib_paths "$so_file" "@rpath/"
-      fi
-    fi
-  done
-
-  echo "=== Dylib bundling complete ==="
+    echo "=== Done: ${#all_dylibs[@]} dylibs bundled ==="
 }
 
 main "$@"
