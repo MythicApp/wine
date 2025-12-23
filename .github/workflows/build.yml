@@ -158,7 +158,7 @@ jobs:
         working-directory: install/share/wine
         run: |
           mkdir -p mono
-          curl -fL https://github.com/wine-mono/wine-mono/releases/download/wine-mono-8.1.0/wine-mono-8.1.0-x86.tar.xz
+          curl -fL https://github.com/wine-mono/wine-mono/releases/download/wine-mono-8.1.0/wine-mono-8.1.0-x86.tar.xz \
             | tar -xJ -C mono
 
       - name: create Engine directory
