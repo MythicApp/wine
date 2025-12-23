@@ -143,6 +143,10 @@ jobs:
         run: |
           cat > wine64 << 'EOF'
           #!/usr/bin/env bash
+
+          # this is a wrapper created for Mythic to forward `wine64` calls to `wine`.
+          # for older versions of Mythic, which expected a wine64 binary to be present.
+
           set -e
           DIR="$(cd "$(dirname "$0")" && pwd)"
           exec "$DIR/wine" "$@"
