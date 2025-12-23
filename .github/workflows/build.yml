@@ -7,7 +7,7 @@ on:
 env:
   MACOSX_DEPLOYMENT_TARGET: 10.15
   SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk
-  TOOLCHAINS: com.applex.dt.toolchain.Xcode13
+  TOOLCHAINS: com.applex.dt.toolchain.Xcode13 # from gcenx
   
   PATH: /usr/local/bin:/usr/local/opt/bison/bin:/usr/bin:/bin:/usr/sbin:/sbin
 
