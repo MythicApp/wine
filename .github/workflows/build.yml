@@ -150,12 +150,18 @@ jobs:
 
           chmod +x "$DIR/wine64"
 
+      - name: install wine mono
+        working-directory: install/share/wine
+        run: |
+          mkdir -p mono
+          curl -fL https://github.com/wine-mono/wine-mono/releases/download/wine-mono-8.1.0/wine-mono-8.1.0-x86.tar.xz
+            | tar -xJ -C mono
+
       - name: create Engine directory
         run: mkdir -p Engine
 
       - name: copy build artifacts
         run: |
-          # copy wine installation
           mkdir -p Engine/wine
           ditto --rsrc install Engine/wine
 
