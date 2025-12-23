@@ -6,23 +6,32 @@ on:
 
 env:
   MACOSX_DEPLOYMENT_TARGET: 10.15
+  SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk
+  TOOLCHAINS: com.applex.dt.toolchain.Xcode13
+  
   PATH: /usr/local/bin:/usr/local/opt/bison/bin:/usr/bin:/bin:/usr/sbin:/sbin
+
+  CPATH: /usr/local/include
+  LIBRARY_PATH: /usr/local/lib
+  
+  # mingw-w64 cross-compilers
   i386_CC: i686-w64-mingw32-gcc
   x86_64_CC: x86_64-w64-mingw32-gcc
   i386_LD: i686-w64-mingw32-ld
   x86_64_LD: x86_64-w64-mingw32-ld
-  CPATH: /usr/local/include
-  LIBRARY_PATH: /usr/local/lib
+  
+  # compiler and linker flags
   CFLAGS: -O2 -Wno-deprecated-declarations -Wno-unguarded-availability
   CXXFLAGS: -O2 -Wno-deprecated-declarations -Wno-unguarded-availability
   CROSSCFLAGS: -O2 -Wno-error=incompatible-pointer-types -Wno-error=int-conversion -Wno-deprecated-declarations
-  LDFLAGS: -Wl,-headerpad_max_install_names -Wl,-rpath,@loader_path/../../ -Wl,-rpath,@loader_path/../../external -Wl,-rpath,/usr/local/lib -L/usr/local/opt/libpcap/lib
   CPPFLAGS: -I/usr/local/opt/libpcap/include
+  LDFLAGS: -Wl,-headerpad_max_install_names -Wl,-rpath,@loader_path/../../ -Wl,-rpath,@loader_path/../../external -Wl,-rpath,/usr/local/lib -L/usr/local/opt/libpcap/lib
+  
   PKG_CONFIG_PATH: /usr/local/opt/libpcap/lib/pkgconfig
+  
+  # wine configure overrides
   ac_cv_lib_soname_MoltenVK: libMoltenVK.dylib
   ac_cv_lib_soname_vulkan: ""
-  TOOLCHAINS: com.applex.dt.toolchain.Xcode13
-  SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref_name }}
@@ -37,13 +46,13 @@ jobs:
         with:
           path: src
 
-      - name: add Xcode 13 toolchain
+      - name: download & add Xcode 13 toolchain
         run: |
           sudo mkdir -p /Library/Developer/Toolchains
           curl -fL https://dl.getmythic.app/engine/toolchains/Xcode13.xctoolchain.tar.xz \
             | sudo tar -xJ -C /Library/Developer/Toolchains
 
-      - name: add macOS 12.3 SDK
+      - name: download & add macOS 12.3 SDK
         run: |
           sudo mkdir -p /Library/Developer/CommandLineTools/SDKs
           curl -fL https://github.com/Gcenx/macos-sdk/releases/download/12.3/MacOSX12.3.tar.bz2 \
