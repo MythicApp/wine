@@ -1,7 +1,6 @@
 #!/bin/zsh
 
-# Bundle dylib dependencies for Wine's distribution
-# This script finds all dylib dependencies, copies them, and fixes install names.
+# this is a script created for Mythic to bundle its dependencies' dylibs and copy them to the appropriate location.
 
 set -e
 
@@ -11,10 +10,25 @@ BREW_PREFIX=$(brew --prefix)
 
 # List of GStreamer plugins to bundle, minus the 'libgst' prefix
 GSTREAMER_PLUGINS=(
-    applemedia asf audioconvert audioparsers audioresample avi
-    coreelements debug deinterlace id3demux isomp4 libav opengl
-    playback typefindfunctions videoconvertscale videofilter
-    videoparsersbad wavparse
+    applemedia
+    asf
+    audioconvert
+    audioparsers
+    audioresample
+    avi
+    coreelements
+    debug
+    deinterlace
+    id3demux
+    isomp4
+    libav
+    opengl
+    playback
+    typefindfunctions
+    videoconvertscale
+    videofilter
+    videoparsersbad
+    wavparse
 )
 
 # list of keg-only formulae and their main dylib names
