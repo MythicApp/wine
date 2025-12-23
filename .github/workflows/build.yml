@@ -149,7 +149,7 @@ jobs:
         run: |
           # copy wine installation
           mkdir -p Engine/wine
-          cp -R install/* Engine/wine
+          ditto --rsrc install Engine/wine
 
       - name: copy externals
         run: |
