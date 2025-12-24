@@ -194,7 +194,7 @@ jobs:
         run: cp -R src/Mythic/Properties.plist Engine/
 
       - name: compress engine artifact
-        run: tar -cf Engine.tar.xz -C Engine --use-compress-program="xz -6 -T0" .
+        run: tar -cf Engine.tar.xz -C Engine --use-compress-program="xz -9 -T0" .
 
       - name: upload engine artifact
         uses: actions/upload-artifact@v5
