@@ -161,6 +161,13 @@ jobs:
           curl -fL https://github.com/wine-mono/wine-mono/releases/download/wine-mono-8.1.0/wine-mono-8.1.0-x86.tar.xz \
             | tar -xJ -C mono
 
+      - name: install wine gecko
+        working-directory: install/share/wine
+        run: |
+          mkdir -p gecko
+          curl -fL https://dl.winehq.org/wine/wine-gecko/2.47.4/wine-gecko-2.47.4-x86.tar.xz \
+            | tar -xJ -C gecko
+
       - name: create Engine directory
         run: mkdir Engine
 
