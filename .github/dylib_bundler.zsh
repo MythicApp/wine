@@ -62,8 +62,8 @@ resolve_rpath() {
     # Search keg-only formula lib dirs
     for entry in "${BUNDLE_LIBS[@]}"; do
         local formula="${entry%%:*}"
-        local path="$(brew --prefix "$formula" 2>/dev/null)/lib/${name}"
-        [[ -f "$path" ]] && { echo "$path"; return; }
+        local lib_path="$(brew --prefix "$formula" 2>/dev/null)/lib/${name}"
+        [[ -f "$lib_path" ]] && { echo "$lib_path"; return; }
     done
 }
 
@@ -106,9 +106,9 @@ fix_install_names() {
     chmod u+w "$file"
     install_name_tool -id "${prefix}$(basename "$file")" "$file" 2>/dev/null || true
     
-    otool -L "$file" | grep -v "$file" | awk '{print $1}' | while read -r path; do
-        [[ "$path" != /usr/lib* && "$path" != /System/* ]] && \
-            install_name_tool -change "$path" "${prefix}${path##*/}" "$file" 2>/dev/null || true
+    otool -L "$file" | grep -v "$file" | awk '{print $1}' | while read -r lib_path; do
+        [[ "$lib_path" != /usr/lib* && "$lib_path" != /System/* ]] && \
+            install_name_tool -change "$lib_path" "${prefix}${lib_path##*/}" "$file" 2>/dev/null || true
     done
     codesign -fs- "$file" 2>/dev/null || true
 }
@@ -131,15 +131,15 @@ main() {
 
     echo "=== Processing GStreamer plugins ==="
     for plugin in "${GSTREAMER_PLUGINS[@]}"; do
-        local path="${gst_prefix}/lib/gstreamer-1.0/libgst${plugin}.dylib"
-        [[ -f "$path" ]] && find_dependencies "$path" || echo "Warning: $plugin not found"
+        local lib_path="${gst_prefix}/lib/gstreamer-1.0/libgst${plugin}.dylib"
+        [[ -f "$lib_path" ]] && find_dependencies "$lib_path" || echo "Warning: $plugin not found"
     done
 
     echo "=== Processing libraries ==="
     for entry in "${BUNDLE_LIBS[@]}"; do
         local formula="${entry%%:*}" libname="${entry#*:}"
-        local path=$(get_lib_path "$formula" "$libname")
-        [[ -n "$path" ]] && find_dependencies "$path" || echo "Warning: $formula not found"
+        local lib_path=$(get_lib_path "$formula" "$libname")
+        [[ -n "$lib_path" ]] && find_dependencies "$lib_path" || echo "Warning: $formula not found"
     done
 
     echo "=== Copying ${#all_dylibs[@]} dylibs ==="
