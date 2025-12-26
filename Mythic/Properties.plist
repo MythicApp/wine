@@ -3,16 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>version</key>
-	<array/>
-	<key>major</key>
-	<integer>3</integer>
-	<key>minor</key>
-	<integer>0</integer>
-	<key>patch</key>
-	<integer>0</integer>
-	<key>preRelease</key>
-	<string>alpha</string>
-	<key>build</key>
-	<string></string>
+	<dict>
+		<key>major</key>
+		<integer>3</integer>
+		<key>minor</key>
+		<integer>0</integer>
+		<key>patch</key>
+		<integer>0</integer>
+		<key>preRelease</key>
+		<string></string>
+		<key>build</key>
+		<string></string>
+	</dict>
 </dict>
 </plist>
