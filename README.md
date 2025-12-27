@@ -7,7 +7,7 @@
 
   Mythic Engine
 
-  ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/MythicApp/Engine/.github%2Fworkflows%2Fbuild.yml)
+  ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/MythicApp/Mythic/build.yml)
   [![Discord](https://img.shields.io/discord/1154998702650425397?color=5865F2)](https://discord.com/invite/58NZ7fFqPy)
 </h1>
 
