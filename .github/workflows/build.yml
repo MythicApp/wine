@@ -181,9 +181,6 @@ jobs:
           # copy dxvk binaries
           mkdir -p Engine/dxvk
           ditto src/external/dxvk-* Engine/dxvk/
-
-          # copy gptk libraries
-          ditto src/external/gptk-*/redist/lib/ Engine/wine/lib/
       
       - name: bundle dylib dependencies
         run: |
