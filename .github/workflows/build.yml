@@ -181,6 +181,10 @@ jobs:
           # copy dxvk binaries
           mkdir -p Engine/dxvk
           ditto src/external/dxvk-* Engine/dxvk/
+
+          # copy dxmt binaries
+          mkdir -p Engine/dxmt
+          ditto src/external/dxmt-* Engine/dxmt/
       
       - name: bundle dylib dependencies
         run: |
